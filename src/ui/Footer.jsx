@@ -7,7 +7,7 @@ function Footer() {
   const [email, setEmail] = useState("");
   const [showContactModal, setShowContactModal] = useState(false);
 
-  const handleSubscribe = e => {
+  const handleSubscribe = (e) => {
     e.preventDefault();
     // Add newsletter subscription logic here
     setEmail("");
@@ -64,7 +64,7 @@ function Footer() {
             <h4 className="text-lg font-semibold text-gray-800">Quick Links</h4>
             <ul className="space-y-3">
               {["Home", "Designs", "About", "Services", "Portfolio"].map(
-                link => (
+                (link) => (
                   <li key={link}>
                     <Link
                       to={`/${link.toLowerCase()}`}
@@ -127,7 +127,7 @@ function Footer() {
                 <input
                   type="email"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="Your email address"
                   className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-accent-teal focus:border-transparent transition duration-200"
                   required
