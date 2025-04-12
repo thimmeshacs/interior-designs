@@ -1,0 +1,155 @@
+import { motion } from "framer-motion";
+import { useDesignDetails } from "./useDesignDetails";
+import MoveBack from "../../ui/MoveBack";
+import { Calendar } from "lucide-react";
+
+function DesignDetails({ categoryname, id }) {
+  const { design, isLoading, error } = useDesignDetails(id);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.log(error);
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">Error: {error.message}</div>
+      </div>
+    );
+  }
+
+  if (!design) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-gray-500">Design not found</div>
+      </div>
+    );
+  }
+
+  // Function to render dynamic details sections
+  const renderDetailsSections = () => {
+    if (!design.details || !design.details.details) return null;
+
+    return Object.entries(design.details.details).map(([key, value]) => {
+      if (!value || key === "0" || key === "1") return null;
+
+      return (
+        <div key={key} className="mt-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 capitalize">
+            {key.replace(/_/g, " ")}
+          </h2>
+
+          {typeof value === "object" && !Array.isArray(value) ? (
+            // Handle nested objects (like color schemes)
+            <div className="grid grid-cols-2 gap-4">
+              {Object.entries(value).map(([subKey, subValue]) => (
+                <div
+                  key={subKey}
+                  className="bg-gray-50 rounded-lg p-4 border border-gray-100"
+                >
+                  <p className="text-sm font-medium text-gray-500 capitalize">
+                    {subKey.replace(/_/g, " ")}
+                  </p>
+                  <p className="text-gray-900 mt-1">{subValue}</p>
+                </div>
+              ))}
+            </div>
+          ) : Array.isArray(value) ? (
+            // Handle arrays (like features lists)
+            <div className="bg-gray-50 rounded-lg p-6 border border-gray-100">
+              <ul className="space-y-3">
+                {value.map((item, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="w-2 h-2 mt-2 bg-blue-500 rounded-full mr-3" />
+                    <span className="text-gray-700">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            // Handle simple string/number values
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
+              <p className="text-gray-700">{value}</p>
+            </div>
+          )}
+        </div>
+      );
+    });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8"
+    >
+      <div className="mb-8">
+        <MoveBack />
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="lg:flex">
+          {/* Left Side - Image */}
+          <div className="lg:w-1/2">
+            <div className="relative h-[600px] lg:h-full">
+              <img
+                src={design.main.image_url}
+                alt={design.main.description}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            </div>
+          </div>
+
+          {/* Right Side - Details */}
+          <div className="lg:w-1/2 lg:overflow-y-auto lg:h-[600px]">
+            <div className="p-8">
+              {/* Description Header */}
+              <div className="mb-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-3">
+                  {design.main.description}
+                </h1>
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Calendar className="w-4 h-4" />
+                  <span className="text-sm">
+                    {new Date(design.main.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+
+              {/* Basic Information */}
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-100">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-500">Category</span>
+                    <span className="text-gray-900 capitalize">
+                      {design.main.category.replace(/_/g, " ")}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-gray-500">
+                      Room Dimension
+                    </span>
+                    <span className="text-gray-900">
+                      {design.main.room_dimension}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic Details Sections */}
+              {renderDetailsSections()}
+            </div>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+export default DesignDetails;
