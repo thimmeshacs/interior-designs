@@ -20,6 +20,7 @@ function Hero() {
   return (
     <section
       className="relative h-screen flex items-center justify-center overflow-hidden"
+      id="hero-section"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
@@ -45,12 +46,12 @@ function Hero() {
           filter: "brightness(0.6)",
         }}
       />
-      <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4">
+      <div className="relative z-10 text-center text-grey-0 max-w-4xl mx-auto px-4">
         <motion.h1
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8 }}
-          className="text-6xl font-serif mb-6"
+          className="text-6xl font-sans mb-6"
         >
           Welcome to The Studio of Spaces
         </motion.h1>

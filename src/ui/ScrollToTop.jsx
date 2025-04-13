@@ -1,21 +1,14 @@
 import { useEffect } from "react";
-import { useScrollPosition } from "../hooks/useScrollPosition";
+import { useLocation } from "react-router-dom";
 
 function ScrollToTop() {
-  const scrollPosition = useScrollPosition();
+  const { pathname } = useLocation();
 
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
 
-  return (
-    scrollPosition > 300 && (
-      <button
-        onClick={scrollToTop}
-        className="fixed bottom-4 right-4 bg-accent-teal text-white p-3 rounded-full shadow-md hover:bg-teal-600"
-      >
-        ↑
-      </button>
-    )
-  );
+  return null;
 }
 
 export default ScrollToTop;

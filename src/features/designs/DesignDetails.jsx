@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useDesignDetails } from "./useDesignDetails";
 import MoveBack from "../../ui/MoveBack";
-import { Calendar } from "lucide-react";
+import { Calendar, ChevronRight } from "lucide-react";
 
 function DesignDetails({ categoryname, id }) {
   const { design, isLoading, error } = useDesignDetails(id);
@@ -9,7 +9,7 @@ function DesignDetails({ categoryname, id }) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
       </div>
     );
   }
@@ -18,7 +18,7 @@ function DesignDetails({ categoryname, id }) {
     console.log(error);
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-500">Error: {error.message}</div>
+        <div className="text-red-700">Error: {error.message}</div>
       </div>
     );
   }
@@ -26,12 +26,11 @@ function DesignDetails({ categoryname, id }) {
   if (!design) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Design not found</div>
+        <div className="text-grey-500">Design not found</div>
       </div>
     );
   }
 
-  // Function to render dynamic details sections
   const renderDetailsSections = () => {
     if (!design.details || !design.details.details) return null;
 
@@ -39,42 +38,40 @@ function DesignDetails({ categoryname, id }) {
       if (!value || key === "0" || key === "1") return null;
 
       return (
-        <div key={key} className="mt-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 capitalize">
-            {key.replace(/_/g, " ")}
+        <div key={key} className="mb-8 last:mb-0">
+          <h2 className="text-xl font-semibold text-grey-900 mb-4 flex items-center">
+            <ChevronRight className="w-5 h-5 text-brand-500 mr-2" />
+            <span className="capitalize">{key.replace(/_/g, " ")}</span>
           </h2>
 
           {typeof value === "object" && !Array.isArray(value) ? (
-            // Handle nested objects (like color schemes)
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {Object.entries(value).map(([subKey, subValue]) => (
                 <div
                   key={subKey}
-                  className="bg-gray-50 rounded-lg p-4 border border-gray-100"
+                  className="bg-grey-50 rounded-lg p-5 border border-grey-100 hover:border-brand-200 transition-colors duration-300"
                 >
-                  <p className="text-sm font-medium text-gray-500 capitalize">
+                  <p className="text-sm font-medium text-grey-500 capitalize mb-2">
                     {subKey.replace(/_/g, " ")}
                   </p>
-                  <p className="text-gray-900 mt-1">{subValue}</p>
+                  <p className="text-grey-900">{subValue}</p>
                 </div>
               ))}
             </div>
           ) : Array.isArray(value) ? (
-            // Handle arrays (like features lists)
-            <div className="bg-gray-50 rounded-lg p-6 border border-gray-100">
+            <div className="bg-grey-50 rounded-lg p-6 border border-grey-100">
               <ul className="space-y-3">
                 {value.map((item, index) => (
                   <li key={index} className="flex items-start">
-                    <span className="w-2 h-2 mt-2 bg-blue-500 rounded-full mr-3" />
-                    <span className="text-gray-700">{item}</span>
+                    <span className="w-2 h-2 mt-2 bg-brand-500 rounded-full mr-3" />
+                    <span className="text-grey-700">{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
           ) : (
-            // Handle simple string/number values
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-              <p className="text-gray-700">{value}</p>
+            <div className="bg-grey-50 rounded-lg p-5 border border-grey-100">
+              <p className="text-grey-700">{value}</p>
             </div>
           )}
         </div>
@@ -93,9 +90,8 @@ function DesignDetails({ categoryname, id }) {
         <MoveBack />
       </div>
 
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+      <div className="bg-grey-0 rounded-2xl shadow-xl overflow-hidden">
         <div className="lg:flex">
-          {/* Left Side - Image */}
           <div className="lg:w-1/2">
             <div className="relative h-[600px] lg:h-full">
               <img
@@ -103,18 +99,17 @@ function DesignDetails({ categoryname, id }) {
                 alt={design.main.description}
                 className="absolute inset-0 w-full h-full object-cover"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
             </div>
           </div>
 
-          {/* Right Side - Details */}
-          <div className="lg:w-1/2 lg:overflow-y-auto lg:h-[600px]">
+          <div className="lg:w-1/2 lg:overflow-y-auto lg:h-[600px] scrollbar-thin scrollbar-thumb-grey-200 scrollbar-track-transparent">
             <div className="p-8">
-              {/* Description Header */}
               <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-3">
+                <h1 className="text-3xl font-bold text-grey-900 mb-3">
                   {design.main.description}
                 </h1>
-                <div className="flex items-center space-x-2 text-gray-600">
+                <div className="flex items-center space-x-2 text-grey-600">
                   <Calendar className="w-4 h-4" />
                   <span className="text-sm">
                     {new Date(design.main.created_at).toLocaleDateString()}
@@ -122,27 +117,25 @@ function DesignDetails({ categoryname, id }) {
                 </div>
               </div>
 
-              {/* Basic Information */}
-              <div className="bg-gray-50 rounded-lg p-6 border border-gray-100">
+              <div className="bg-grey-50 rounded-lg p-6 border border-grey-100 mb-8">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-500">Category</span>
-                    <span className="text-gray-900 capitalize">
+                    <span className="font-medium text-grey-500">Category</span>
+                    <span className="text-grey-900 capitalize bg-brand-50 px-3 py-1 rounded-full text-sm">
                       {design.main.category.replace(/_/g, " ")}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-500">
+                    <span className="font-medium text-grey-500">
                       Room Dimension
                     </span>
-                    <span className="text-gray-900">
+                    <span className="text-grey-900 bg-blue-100 px-3 py-1 rounded-full text-sm">
                       {design.main.room_dimension}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Dynamic Details Sections */}
               {renderDetailsSections()}
             </div>
           </div>

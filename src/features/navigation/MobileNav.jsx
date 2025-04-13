@@ -2,7 +2,13 @@ import { motion } from "framer-motion";
 import { navItems } from "./NavItems";
 import { Link } from "react-router-dom";
 
-function MobileNav({ isOpen, onClose, onContactClick }) {
+function MobileNav({
+  isOpen,
+  onClose,
+  onContactClick,
+  isScrolled,
+  shouldBeWhite,
+}) {
   return (
     <motion.nav
       initial={{ opacity: 0, height: 0 }}
@@ -21,7 +27,9 @@ function MobileNav({ isOpen, onClose, onContactClick }) {
         >
           <Link
             to={item.path}
-            className="block text-gray-800 hover:text-accent-teal transition-colors duration-300"
+            className={`block ${
+              shouldBeWhite ? "text-white" : "text-gray-800"
+            } hover:text-accent-teal transition-colors duration-300`}
             onClick={onClose}
           >
             {item.label}
@@ -33,7 +41,9 @@ function MobileNav({ isOpen, onClose, onContactClick }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="w-full bg-accent-teal text-white px-6 py-2 rounded-full hover:bg-teal-600 transition-colors duration-300 mt-4"
+        className={`w-full ${
+          isScrolled ? "bg-accent-teal text-white" : "bg-white text-accent-teal"
+        } px-6 py-2 rounded-full hover:bg-teal-600 hover:text-white transition-colors duration-300 mt-4`}
       >
         Contact Us
       </motion.button>

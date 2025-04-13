@@ -12,7 +12,7 @@ function Designs() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
       </div>
     );
   }
@@ -20,7 +20,9 @@ function Designs() {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-red-500">Error: {error.message}</div>
+        <div className="text-red-700 bg-red-100 p-4 rounded-md shadow-sm">
+          Error: {error.message}
+        </div>
       </div>
     );
   }
@@ -30,19 +32,31 @@ function Designs() {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 pt-24"
+      className="container mx-auto px-4 pt-24 font-sans"
     >
       <div className="flex items-center mb-8">
         <MoveBack />
       </div>
-      <h1 className="text-4xl font-bold mb-8 capitalize text-gray-900 dark:text-white">
+      <h1 className="text-4xl font-bold mb-8 capitalize text-grey-900 dark:text-grey-0 transition-base">
         {categoryname.replace(/-/g, " ")} Designs
       </h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-8">
-        {designs?.map((design) => (
-          <DesignCard key={design.id} design={design} />
+      <motion.div
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        {designs?.map((design, index) => (
+          <motion.div
+            key={design.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+          >
+            <DesignCard design={design} />
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

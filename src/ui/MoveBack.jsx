@@ -8,7 +8,7 @@ function MoveBack() {
   return (
     <motion.button
       onClick={() => navigate(-1)}
-      className="flex items-center text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+      className="flex items-center text-grey-600 hover:text-grey-900 dark:text-grey-300 dark:hover:text-grey-0 transition-base"
       whileHover={{ x: -5 }}
       whileTap={{ scale: 0.95 }}
       transition={{ duration: 0.2 }}

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
-import Chatbot from "./Chatbot"; // Import the new component
+import Chatbot from "./Chatbot";
 
 function Contactus() {
   const [formState, setFormState] = useState({
@@ -20,11 +20,11 @@ function Contactus() {
     hours: "Mon to Fri 9.00AM to 6.00PM",
   };
 
-  const handleFormSubmit = async e => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success("Thanks for your message! We'll be in touch soon.");
       setFormState({ name: "", email: "", message: "" });
     } catch (error) {
@@ -34,38 +34,38 @@ function Contactus() {
     }
   };
 
-  const handleInputChange = e => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormState(prev => ({
+    setFormState((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-24">
+    <div className="min-h-screen bg-grey-50 py-12 md:py-16">
       <Toaster position="top-center" />
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden"
+          className="max-w-4xl mx-auto bg-grey-0 rounded-lg shadow-md overflow-hidden"
         >
           <div className="grid md:grid-cols-2 gap-0">
             {/* Contact Form */}
-            <div className="p-8 md:p-12">
-              <h2 className="text-3xl font-bold text-gray-800 mb-4">
+            <div className="p-6 md:p-8">
+              <h2 className="text-2xl font-bold text-grey-800 mb-4">
                 Get in Touch
               </h2>
-              <p className="text-gray-600 mb-8">
+              <p className="text-grey-600 mb-6 text-base">
                 Have a question or want to discuss your project? Fill out the
                 form below.
               </p>
-              <form onSubmit={handleFormSubmit} className="space-y-6">
+              <form onSubmit={handleFormSubmit} className="space-y-4">
                 <div>
                   <label
                     htmlFor="name"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-grey-700 mb-2"
                   >
                     Full Name
                   </label>
@@ -76,13 +76,13 @@ function Contactus() {
                     value={formState.name}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-accent-teal focus:border-transparent transition"
+                    className="w-full px-4 py-2 rounded-md border border-grey-200 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-base"
                   />
                 </div>
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-grey-700 mb-2"
                   >
                     Email Address
                   </label>
@@ -93,13 +93,13 @@ function Contactus() {
                     value={formState.email}
                     onChange={handleInputChange}
                     required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-accent-teal focus:border-transparent transition"
+                    className="w-full px-4 py-2 rounded-md border border-grey-200 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-base"
                   />
                 </div>
                 <div>
                   <label
                     htmlFor="message"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-grey-700 mb-2"
                   >
                     Your Message
                   </label>
@@ -110,7 +110,7 @@ function Contactus() {
                     onChange={handleInputChange}
                     rows="4"
                     required
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-accent-teal focus:border-transparent transition"
+                    className="w-full px-4 py-2 rounded-md border border-grey-200 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-base"
                   ></textarea>
                 </div>
                 <motion.button
@@ -118,51 +118,53 @@ function Contactus() {
                   disabled={isSubmitting}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="w-full bg-accent-teal text-white px-6 py-3 rounded-lg hover:bg-teal-600 transition-colors duration-300 flex items-center justify-center space-x-2"
+                  className="w-full bg-brand-600 text-grey-0 px-6 py-3 rounded-md hover:bg-brand-700 transition-base flex items-center justify-center"
                 >
-                  <span>{isSubmitting ? "Sending..." : "Send Message"}</span>
+                  <span className="text-base">
+                    {isSubmitting ? "Sending..." : "Send Message"}
+                  </span>
                 </motion.button>
               </form>
             </div>
             {/* Contact Information */}
-            <div className="bg-gradient-to-br from-accent-teal to-teal-600 p-8 md:p-12 text-white">
-              <h3 className="text-2xl font-bold mb-8">Contact Information</h3>
-              <div className="space-y-6">
-                <div className="flex items-start space-x-4">
-                  <Phone className="mt-1" />
+            <div className="bg-brand-600 p-6 md:p-8 text-grey-0">
+              <h3 className="text-xl font-bold mb-6">Contact Information</h3>
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <Phone className="w-5 h-5 mt-1" />
                   <div>
-                    <h4 className="font-semibold">Phone</h4>
+                    <h4 className="font-medium text-base">Phone</h4>
                     <a
                       href={`tel:${contactInfo.phone}`}
-                      className="hover:underline"
+                      className="text-sm hover:underline"
                     >
                       {contactInfo.phone}
                     </a>
                   </div>
                 </div>
-                <div className="flex items-start space-x-4">
-                  <Mail className="mt-1" />
+                <div className="flex items-start space-x-3">
+                  <Mail className="w-5 h-5 mt-1" />
                   <div>
-                    <h4 className="font-semibold">Email</h4>
+                    <h4 className="font-medium text-base">Email</h4>
                     <a
                       href={`mailto:${contactInfo.email}`}
-                      className="hover:underline"
+                      className="text-sm hover:underline"
                     >
                       {contactInfo.email}
                     </a>
                   </div>
                 </div>
-                <div className="flex items-start space-x-4">
-                  <MapPin className="mt-1" />
+                <div className="flex items-start space-x-3">
+                  <MapPin className="w-5 h-5 mt-1" />
                   <div>
-                    <h4 className="font-semibold">Address</h4>
+                    <h4 className="font-medium text-base">Address</h4>
                     <p className="text-sm">{contactInfo.address}</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-4">
-                  <Clock className="mt-1" />
+                <div className="flex items-start space-x-3">
+                  <Clock className="w-5 h-5 mt-1" />
                   <div>
-                    <h4 className="font-semibold">Business Hours</h4>
+                    <h4 className="font-medium text-base">Business Hours</h4>
                     <p className="text-sm">{contactInfo.hours}</p>
                   </div>
                 </div>
@@ -171,7 +173,6 @@ function Contactus() {
           </div>
         </motion.div>
       </div>
-      {/* Chatbot Component */}
       <Chatbot />
     </div>
   );

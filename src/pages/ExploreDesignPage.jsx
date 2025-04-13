@@ -4,7 +4,7 @@ import MoveBack from "../ui/MoveBack";
 
 function ExploreDesignPage() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24">
+    <div className="min-h-screen bg-grey-50 dark:bg-grey-900 pt-24">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -19,7 +19,7 @@ function ExploreDesignPage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4"
+            className="text-4xl md:text-5xl font-bold text-grey-900 dark:text-grey-0 mb-4"
           >
             Explore Our Design Collections
           </motion.h1>
@@ -27,7 +27,7 @@ function ExploreDesignPage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
+            className="text-lg text-grey-600 dark:text-grey-300 max-w-2xl mx-auto"
           >
             Discover our carefully curated collection of interior designs across
             various categories. Each design is crafted to inspire and transform
