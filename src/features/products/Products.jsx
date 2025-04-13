@@ -1,11 +1,17 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useProducts } from "./useProducts";
-import { ArrowRight } from "lucide-react"; // Make sure to install lucide-react for icons
+import { ArrowRight } from "lucide-react";
 
 function Products() {
   const { category } = useParams();
+  const navigate = useNavigate();
   const { products, isLoading, error } = useProducts(category);
+
+  // Handle navigation to product details with category in URL
+  const handleProductClick = (productId) => {
+    navigate(`/products/${category}/${productId}`);
+  };
 
   if (isLoading) {
     return (
@@ -48,7 +54,8 @@ function Products() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="group bg-white rounded-lg shadow-md hover:shadow-xl transition-smooth overflow-hidden relative"
+            className="group bg-white rounded-lg shadow-md hover:shadow-xl transition-smooth overflow-hidden relative cursor-pointer"
+            onClick={() => handleProductClick(product.id)}
           >
             {/* Product Image with overlay on hover */}
             <div className="relative h-64 overflow-hidden">

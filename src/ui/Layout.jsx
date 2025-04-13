@@ -5,8 +5,10 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Chatbot from "../features/booking/Chatbot";
 
-function Layout() {
+function Layout({ onCitySelect, cityDetails, notFound }) {
   const [isChatOpen, setIsChatOpen] = useState(false);
+
+  console.log("Layout height applied", { cityDetails, notFound });
 
   const toggleChat = () => {
     setIsChatOpen((prev) => !prev);
@@ -14,11 +16,11 @@ function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col bg-grey-50">
-      <Header />
+      <Header onCitySelect={onCitySelect} />
       <main className="flex-grow">
         <Outlet />
       </main>
-      <Footer />
+      <Footer cityDetails={cityDetails} />
 
       {/* Chat Toggle Button with Larger Image */}
       <motion.button

@@ -4,7 +4,7 @@ import { FaMapMarkerAlt, FaChevronDown } from "react-icons/fa";
 import { supabase } from "./supabaseClient";
 
 const LocationSelector = ({ onCitySelect, className }) => {
-  const [currentCity, setCurrentCity] = useState("Detecting...");
+  const [currentCity, setCurrentCity] = useState(null);
   const [cities, setCities] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -14,41 +14,82 @@ const LocationSelector = ({ onCitySelect, className }) => {
 
   // Fetch active cities from Supabase
   useEffect(() => {
+    let isMounted = true;
     const fetchCities = async () => {
       try {
+        console.log("Fetching active cities from Supabase...");
         const { data, error } = await supabase
           .from("Citys_Data")
           .select("city_name, contact_1, contact_2, address_1")
           .eq("status", "Active");
 
-        if (error) throw error;
-        setCities(data || []);
+        if (error) {
+          console.error("Error fetching cities:", error.message);
+          throw error;
+        }
+
+        if (isMounted) {
+          console.log("Cities fetched successfully:", data);
+          setCities(data || []);
+        }
       } catch (err) {
         console.error("Error fetching cities:", err.message);
-        setError("Failed to load cities.");
+        if (isMounted) {
+          setError("Failed to load cities.");
+          setIsLoading(false);
+        }
       }
     };
+
     fetchCities();
+
+    return () => {
+      console.log("Cleanup - City fetch unmounting");
+      isMounted = false;
+    };
   }, []);
 
   // Fetch initial city from IP
   useEffect(() => {
-    if (hasFetched.current) return;
+    if (hasFetched.current || cities.length === 0) return;
 
     let isMounted = true;
     const fetchCityFromIP = async () => {
       setIsLoading(true);
+      hasFetched.current = true;
+
       try {
+        console.log("Fetching IP details from ipapi.co...");
         const response = await fetch("https://ipapi.co/json/");
-        if (!response.ok) throw new Error("Failed to fetch IP info");
+        if (!response.ok) {
+          console.error("Failed to fetch IP info. Status:", response.status);
+          throw new Error("Failed to fetch IP info");
+        }
         const data = await response.json();
         const cityName = data.city || "Unknown Location";
+        const ipAddress = data.ip;
+
+        console.log("IP details fetched:", { ipAddress, cityName });
+
+        // Insert into database
+        console.log("Inserting into users_address...");
+        const { error: insertError } = await supabase
+          .from("users_address")
+          .insert([{ ip_address: ipAddress, city_name: cityName }]);
+
+        if (insertError) {
+          console.error("Insert failed:", insertError.message);
+          throw insertError;
+        }
+        console.log("Database insert successful");
 
         if (isMounted) {
           setCurrentCity(cityName);
-          // Check if the IP-detected city is in active cities
-          const activeCity = cities.find((city) => city.city_name === cityName);
+          setIsLoading(false); // Move this here to ensure state updates first
+          const activeCity = cities.find((c) => c.city_name === cityName);
+
           if (activeCity && onCitySelect) {
+            console.log("Active city found:", activeCity);
             onCitySelect({
               city: cityName,
               cityDetails: {
@@ -58,60 +99,62 @@ const LocationSelector = ({ onCitySelect, className }) => {
               },
             });
           } else if (onCitySelect) {
+            console.log("No active city match");
             onCitySelect({ city: cityName, notFound: true });
           }
         }
       } catch (err) {
-        console.error("IP fetch error:", err.message);
+        console.error("IP fetch failed:", err.message);
         if (isMounted) {
-          setError("Failed to detect location.");
+          setError("Location detection failed");
           setCurrentCity("Select City");
-        }
-      } finally {
-        if (isMounted) {
           setIsLoading(false);
-          hasFetched.current = true;
         }
       }
     };
 
-    // Delay IP fetch until cities are loaded
-    if (cities.length > 0) {
-      fetchCityFromIP();
-    }
+    fetchCityFromIP();
 
     return () => {
+      console.log("Cleanup - IP fetch unmounting");
       isMounted = false;
     };
   }, [cities, onCitySelect]);
 
-  // Handle city selection
+  // Handle manual city selection
   const handleCitySelect = (city) => {
+    console.log("User selected:", city.city_name);
     setCurrentCity(city.city_name);
     setIsOpen(false);
-    if (onCitySelect) {
-      onCitySelect({
-        city: city.city_name,
-        cityDetails: {
-          contact_1: city.contact_1,
-          contact_2: city.contact_2,
-          address_1: city.address_1,
-        },
-      });
-    }
+    setIsLoading(false); // Ensure loading is off after manual selection
+
+    onCitySelect?.({
+      city: city.city_name,
+      cityDetails: {
+        contact_1: city.contact_1,
+        contact_2: city.contact_2,
+        address_1: city.address_1,
+      },
+    });
   };
 
-  // Close dropdown when clicking outside
+  // Close dropdown on outside click
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        console.log("Outside click detected - closing dropdown");
         setIsOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      console.log("Removing outside click listener");
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, []);
 
+  // Animation configurations
   const dropdownVariants = {
     open: { opacity: 1, y: 0, display: "block" },
     closed: { opacity: 0, y: -10, transitionEnd: { display: "none" } },
@@ -138,7 +181,9 @@ const LocationSelector = ({ onCitySelect, className }) => {
       >
         <FaMapMarkerAlt className="text-lg" />
         <span className="text-sm font-bold">
-          {isLoading ? "Detecting..." : currentCity}
+          {isLoading && !currentCity
+            ? "Detecting..."
+            : currentCity || "Select City"}
         </span>
         <motion.span
           variants={chevronVariants}
