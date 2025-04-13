@@ -57,31 +57,34 @@ function ProductCategories() {
   const navigate = useNavigate();
 
   return (
-    <section className="py-16 bg-white">
-      <div className="container mx-auto px-4 max-w-6xl">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    <section className="py-xl bg-grey-50">
+      <div className="container mx-auto px-md max-w-6xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-lg">
           {categories.map((category, idx) => (
             <motion.div
               key={category.title}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               transition={{ duration: 0.6, delay: idx * 0.1 }}
-              className="relative group cursor-pointer overflow-hidden rounded-lg shadow-md h-64"
+              className="group cursor-pointer"
               onClick={() => navigate(`/products/${category.slug}`)}
             >
-              <div className="absolute inset-0 bg-black opacity-40 transition-opacity group-hover:opacity-30 z-10" />
-              <img
-                src={category.image}
-                alt={category.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 flex flex-col justify-end p-6 z-20">
-                <h3 className="text-xl font-semibold mb-1 text-white">
-                  {category.title}
-                </h3>
-                <p className="text-sm text-white opacity-90">
-                  {category.description}
-                </p>
+              <div className="relative overflow-hidden rounded-lg shadow-lg h-72 mb-md">
+                <div className="absolute inset-0 bg-black opacity-40 transition-all duration-300 group-hover:opacity-30 z-10" />
+                <img
+                  src={category.image}
+                  alt={category.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 flex flex-col justify-end p-lg z-20">
+                  <h3 className="text-2xl font-bold mb-xs text-white">
+                    {category.title}
+                  </h3>
+                  <p className="text-base text-white opacity-90">
+                    {category.description}
+                  </p>
+                </div>
               </div>
             </motion.div>
           ))}

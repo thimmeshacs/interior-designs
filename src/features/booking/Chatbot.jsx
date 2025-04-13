@@ -1,237 +1,243 @@
-import { useState, useRef, useEffect } from "react";
+// src/features/booking/Chatbot.jsx
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Send } from "lucide-react";
 import { supabase } from "../../services/supabaseClient";
 
-export default function Chatbot({ onClose }) {
-  const [chatMessages, setChatMessages] = useState([
-    {
-      type: "bot",
-      text: "Hello! How can I assist you today? Ask me anything about our services!",
-    },
-  ]);
-  const [userInput, setUserInput] = useState("");
-  const [isChatLoading, setIsChatLoading] = useState(false);
-  const [isFirstResponse, setIsFirstResponse] = useState(true);
-  const chatContainerRef = useRef(null);
-  const lastMessageRef = useRef(null);
+export default function Chatbot() {
+  const [step, setStep] = useState(1); // Step in the conversation flow
+  const [chatMessages, setChatMessages] = useState([]); // To store chat history
+  const [formData, setFormData] = useState({
+    fullName: "",
+    phoneNumber: "",
+    email: "",
+    serviceType: "",
+    city: "",
+    contact1: "",
+    contact2: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [cities, setCities] = useState([]); // List of cities fetched from Supabase
 
-  const scrollToNewMessage = () => {
-    if (lastMessageRef.current && chatContainerRef.current) {
-      const container = chatContainerRef.current;
-      const newMessage = lastMessageRef.current;
-      const scrollPosition = newMessage.offsetTop - container.offsetTop;
-      container.scrollTo({
-        top: scrollPosition,
-        behavior: "smooth",
-      });
-    }
+  // Fetch active cities from Supabase on component mount
+  useEffect(() => {
+    const fetchCities = async () => {
+      const { data, error } = await supabase
+        .from("Citys_Data")
+        .select("city_name, contact_1, contact_2")
+        .eq("status", "Active");
+
+      if (error) console.error("Error fetching cities:", error.message);
+      else setCities(data || []);
+    };
+    fetchCities();
+  }, []);
+
+  // Handle city selection
+  const handleCitySelect = (selectedCity) => {
+    setFormData({
+      ...formData,
+      city: selectedCity.city_name,
+      contact1: selectedCity.contact_1,
+      contact2: selectedCity.contact_2,
+    });
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        type: "bot",
+        text: `Great! You've selected ${selectedCity.city_name}. What service do you need?`,
+      },
+    ]);
+    setStep(2);
   };
 
-  useEffect(() => {
-    if (chatMessages.length > 0) {
-      scrollToNewMessage();
+  // Handle user input for service type
+  const handleServiceSelect = (service) => {
+    setFormData({ ...formData, serviceType: service });
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        type: "bot",
+        text: `You've selected "${service}". Please provide your details.`,
+      },
+    ]);
+    setStep(3);
+  };
+
+  // Handle form submission
+  const handleSubmit = async () => {
+    if (!formData.fullName || !formData.phoneNumber) {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          type: "bot",
+          text: "Please provide your full name and phone number to proceed.",
+        },
+      ]);
+      return;
     }
-  }, [chatMessages]);
 
-  const signature = `
-Team,
-Homealive Super Interior Designer's
-📞 +91 72073 44618`;
-
-  const searchInteriorDesigns = async (category) => {
     try {
-      const { data, error } = await supabase
-        .from("interior_designs")
-        .select("*")
-        .ilike("category", `%${category}%`);
+      setLoading(true);
+      const { error } = await supabase.from("get_quotation_data").insert([
+        {
+          full_name: formData.fullName,
+          phone_number: formData.phoneNumber,
+          email_address: formData.email,
+          service_type: formData.serviceType,
+          city_name: formData.city,
+        },
+      ]);
 
       if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error("Error searching designs:", error);
-      return [];
-    }
-  };
-
-  const handleChatSubmit = async (e) => {
-    e.preventDefault();
-    if (!userInput.trim()) return;
-
-    setChatMessages((prev) => [...prev, { type: "user", text: userInput }]);
-    setIsChatLoading(true);
-
-    try {
-      const keywords = [
-        "kitchen",
-        "bedroom",
-        "hall",
-        "bathroom",
-        "dining",
-        "office",
-        "entertainment",
-        "penthouse",
-        "garden",
-      ];
-      const matchedKeyword = keywords.find((keyword) =>
-        userInput.toLowerCase().includes(keyword.toLowerCase())
-      );
-
-      let designs = [];
-      if (matchedKeyword) {
-        designs = await searchInteriorDesigns(matchedKeyword);
-      }
-
-      const formattedPrompt = `You have received the following message from a customer who visited our website, 'Super Interior Designer's': '${userInput}'. Provide a response without mentioning specific costs or amounts in INR or any currency. If the user asks about pricing (e.g., cost of a kitchen interior, modular setup, or design work), reply with: "The cost may vary depending on the materials chosen, design preferences, and location. We recommend getting in touch with our expert team for a more accurate and customized quote." Ensure the response is polite, informative, and professional. Do not include phrases like "Thank you for reaching out" or similar thank-you statements unless explicitly instructed.`;
-
-      const botResponse = await window.puter.ai.chat(formattedPrompt, {
-        model: "gpt-4o-mini",
-        systemPrompt:
-          "You are a helpful assistant for Super Interior Designer's, an interior design company. Provide concise, friendly responses without specific cost estimates or thank-you phrases (e.g., 'Thank you for reaching out'), guiding users to contact the team for quotes when pricing is inquired.",
-      });
-
-      let responseText =
-        typeof botResponse === "string"
-          ? botResponse
-          : botResponse?.message?.content ||
-            "Sorry, I couldn't process that. How can I assist you further?";
-
-      if (!isFirstResponse) {
-        responseText = responseText
-          .replace(
-            /Thank you for reaching out to (us at )?Super Interior Designer's!?/gi,
-            ""
-          )
-          .trim();
-      }
-
-      if (isFirstResponse) {
-        responseText = `Dear Customer, Thank you for reaching out to Super Interior Designer's!\n\n${responseText}`;
-        setIsFirstResponse(false);
-      }
-
-      responseText = `${responseText}\n\n${signature}`;
-
-      setChatMessages((prev) => [...prev, { type: "bot", text: responseText }]);
-
-      if (designs.length > 0) {
-        const imageMessage = {
-          type: "bot",
-          text: "Here are some relevant designs for your reference:",
-          images: designs.map((design) => ({
-            url: design.image_url,
-            description: design.description,
-          })),
-        };
-        setChatMessages((prev) => [...prev, imageMessage]);
-      }
-    } catch (error) {
-      console.error("Chatbot error:", error.message);
-      let errorResponse = "Oops! Something went wrong. Please try again!";
-
-      if (isFirstResponse) {
-        errorResponse = `Dear Customer, Thank you for reaching out to Super Interior Designer's!\n\n${errorResponse}`;
-        setIsFirstResponse(false);
-      }
-      errorResponse = `${errorResponse}\n\n${signature}`;
 
       setChatMessages((prev) => [
         ...prev,
-        { type: "bot", text: errorResponse },
+        {
+          type: "bot",
+          text: `Thank you, ${formData.fullName}! Our team in ${formData.city} will contact you shortly.`,
+        },
+        {
+          type: "bot",
+          text: `Contact Details:\nPrimary: ${formData.contact1}\nSecondary: ${
+            formData.contact2 || "Not available"
+          }`,
+        },
       ]);
+      setStep(5); // Show success message
+    } catch (err) {
+      console.error("Error submitting data:", err.message);
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          type: "bot",
+          text: "Oops! Something went wrong. Please try again or call us directly.",
+        },
+        { type: "bot", text: `Primary Contact: ${formData.contact1}` },
+      ]);
+      setStep(6); // Show error message
     } finally {
-      setIsChatLoading(false);
-      setUserInput("");
+      setLoading(false);
     }
   };
 
   return (
-    <div className="h-96 flex flex-col">
-      <div className="bg-brand-600 p-spacing-md text-grey-0 flex justify-between items-center">
-        <h3 className="font-semibold">Chat with Us</h3>
-        <button
-          onClick={onClose}
-          className="text-grey-0 hover:text-grey-200 transition-base"
-        >
-          ✕
-        </button>
+    <div className="max-w-md w-full mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+      {/* Header */}
+      <div className="bg-teal-600 p-4 text-center text-white font-bold rounded-t-lg">
+        Chat with Us
       </div>
-      <div
-        ref={chatContainerRef}
-        className="flex-1 p-spacing-md overflow-y-auto space-y-spacing-md scrollbar-thin scrollbar-thumb-grey-200 scrollbar-track-grey-50"
-      >
+
+      {/* Chat Messages */}
+      <div className="flex-1 p-4 overflow-y-auto space-y-4 max-h-[350px]">
         {chatMessages.map((message, index) => (
           <div
             key={index}
-            ref={index === chatMessages.length - 1 ? lastMessageRef : null}
             className={`flex ${
               message.type === "user" ? "justify-end" : "justify-start"
             }`}
           >
             <div
-              className={`max-w-[80%] p-spacing-sm rounded-lg ${
+              className={`max-w-[80%] p-3 rounded-lg ${
                 message.type === "user"
-                  ? "bg-brand-600 text-grey-0"
-                  : "bg-grey-100 text-grey-800"
+                  ? "bg-teal-600 text-white"
+                  : "bg-gray-100 text-gray-800"
               }`}
             >
               {message.text.split("\n").map((line, i) => (
-                <p key={i} className="mb-1 last:mb-0">
-                  {line}
-                </p>
+                <p key={i}>{line}</p>
               ))}
-              {message.images && (
-                <div className="mt-spacing-sm space-y-spacing-sm">
-                  {message.images.map((image, imgIndex) => (
-                    <div key={imgIndex} className="space-y-1">
-                      <img
-                        src={image.url}
-                        alt={image.description}
-                        className="w-full h-auto rounded-lg"
-                        loading="lazy"
-                      />
-                      <p className="text-sm text-grey-600">
-                        {image.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         ))}
-        {isChatLoading && (
-          <div className="flex justify-start">
-            <div className="bg-grey-100 text-grey-800 p-spacing-sm rounded-lg">
-              <span className="animate-pulse">Typing...</span>
+
+        {step === 1 && (
+          <div className="space-y-2">
+            <p className="text-gray-700 font-medium">
+              Please select your city:
+            </p>
+            <select
+              className="w-full p-2 border rounded"
+              onChange={(e) => {
+                const selectedCity = cities.find(
+                  (city) => city.city_name === e.target.value
+                );
+                handleCitySelect(selectedCity);
+              }}
+            >
+              <option value="">Choose City</option>
+              {cities.map((city) => (
+                <option key={city.city_name} value={city.city_name}>
+                  {city.city_name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="space-y-2">
+            <p className="text-gray-700 font-medium">
+              What service do you need?
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                "Full Home Interior",
+                "Kitchen & Bath Design",
+                "Office Space Design",
+              ].map((service) => (
+                <button
+                  key={service}
+                  className="p-2 bg-gray-100 rounded hover:bg-gray-200 text-sm"
+                  onClick={() => handleServiceSelect(service)}
+                >
+                  {service}
+                </button>
+              ))}
             </div>
           </div>
         )}
+
+        {step === 3 && (
+          <div className="space-y-2">
+            <input
+              type="text"
+              placeholder="Full Name *"
+              value={formData.fullName}
+              onChange={(e) =>
+                setFormData({ ...formData, fullName: e.target.value })
+              }
+              className="w-full p-2 border rounded"
+              required
+            />
+            <input
+              type="tel"
+              placeholder="Phone Number *"
+              value={formData.phoneNumber}
+              onChange={(e) =>
+                setFormData({ ...formData, phoneNumber: e.target.value })
+              }
+              className="w-full p-2 border rounded"
+              required
+            />
+            <input
+              type="email"
+              placeholder="Email (Optional)"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              className="w-full p-2 border rounded"
+            />
+            <button
+              className="w-full p-2 bg-teal-600 text-white rounded"
+              onClick={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? "Submitting..." : "Submit"}
+            </button>
+          </div>
+        )}
       </div>
-      <form
-        onSubmit={handleChatSubmit}
-        className="p-spacing-md border-t border-grey-200"
-      >
-        <div className="flex space-x-spacing-sm">
-          <input
-            type="text"
-            value={userInput}
-            onChange={(e) => setUserInput(e.target.value)}
-            placeholder="Type your message..."
-            disabled={isChatLoading}
-            className="flex-1 px-spacing-md py-spacing-sm rounded-lg border border-grey-200 focus:ring-2 focus:ring-brand-500 focus:border-transparent disabled:opacity-50 text-grey-800"
-          />
-          <motion.button
-            type="submit"
-            disabled={isChatLoading}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-brand-600 text-grey-0 p-spacing-sm rounded-lg hover:bg-brand-700 transition-base disabled:opacity-50"
-          >
-            <Send size={20} />
-          </motion.button>
-        </div>
-      </form>
     </div>
   );
 }
