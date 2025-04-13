@@ -1,20 +1,24 @@
 import { useForm } from "react-hook-form";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "../../services/supabaseClient";
+import toast, { Toaster } from "react-hot-toast";
 
-function ConsultationForm() {
+function ConsultationForm({ selectedCity }) {
   const [selectedDate, setSelectedDate] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [submittedName, setSubmittedName] = useState("");
+  const [contactNumber, setContactNumber] = useState("+91 72073 44618");
+  const [cityInput, setCityInput] = useState("");
+
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm();
-
-  const onSubmit = (data) => {
-    console.log("Form submitted:", { ...data, consultationDate: selectedDate });
-  };
 
   const services = [
     "Full Home Design",
@@ -25,6 +29,94 @@ function ConsultationForm() {
     "Kitchen & Bath Design",
   ];
 
+  useEffect(() => {
+    setCityInput(selectedCity?.city || "");
+  }, [selectedCity]);
+
+  useEffect(() => {
+    const fetchContactNumber = async () => {
+      if (!selectedCity?.city || selectedCity?.notFound) {
+        setContactNumber("+91 72073 44618");
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("Citys_Data")
+          .select("contact_1")
+          .eq("city_name", selectedCity.city)
+          .eq("status", "Active")
+          .single();
+
+        if (error || !data) {
+          console.error("Error fetching contact:", error?.message);
+          setContactNumber("+91 72073 44618");
+        } else {
+          setContactNumber(data.contact_1 || "+91 72073 44618");
+        }
+      } catch (err) {
+        console.error("Supabase error:", err);
+        setContactNumber("+91 72073 44618");
+      }
+    };
+
+    fetchContactNumber();
+  }, [selectedCity]);
+
+  const onSubmit = async (data) => {
+    try {
+      if (!selectedDate) {
+        throw new Error("Please select a preferred date");
+      }
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+
+      const submissionData = {
+        full_name: data.name,
+        email_address: data.email,
+        phone_number: data.phone,
+        service_type: data.service,
+        preferred_date: formattedDate,
+        project_details: data.details || null,
+        city_name: data.city || selectedCity?.city || "Unknown",
+      };
+
+      const { error } = await supabase
+        .from("get_quotation_data")
+        .insert([submissionData]);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      toast.success("Form submitted successfully!", {
+        position: "top-right",
+        duration: 3000,
+      });
+
+      setSubmittedName(data.name);
+      setShowPopup(true);
+
+      reset();
+      setSelectedDate(null);
+      setCityInput(selectedCity?.city || "");
+    } catch (err) {
+      console.error("Error submitting form:", err);
+      toast.error(
+        err.message || "Failed to book consultation. Please try again.",
+        {
+          position: "top-right",
+          duration: 4000,
+        }
+      );
+    }
+  };
+
+  const popupVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, scale: 0.8, transition: { duration: 0.2 } },
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -32,9 +124,48 @@ function ConsultationForm() {
       transition={{ duration: 0.5 }}
       className="max-w-7xl mx-auto"
     >
+      <Toaster />
+
+      <AnimatePresence>
+        {showPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            onClick={() => setShowPopup(false)}
+          >
+            <motion.div
+              variants={popupVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              className="bg-white rounded-lg p-8 max-w-md w-full shadow-2xl border-t-4 border-brand-600"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                Dear {submittedName},
+              </h3>
+              <p className="text-gray-700 mb-6">
+                Thank you for choosing InteriorCo to transform your vision into
+                reality! Our dedicated team of design experts is excited to
+                connect with you soon, crafting a personalized experience to
+                create the space of your dreams.
+              </p>
+              <button
+                onClick={() => setShowPopup(false)}
+                className="w-full bg-brand-600 text-white py-2 px-4 rounded-lg hover:bg-brand-700 transition duration-200 font-medium"
+              >
+                Close
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="bg-grey-0 rounded-lg shadow-md overflow-hidden">
         <div className="grid md:grid-cols-2">
-          {/* Left side - Form */}
+          {/* Form section */}
           <div className="p-6 md:p-8">
             <h2 className="text-2xl md:text-3xl font-bold text-grey-900 mb-6">
               Book Your Consultation
@@ -84,7 +215,7 @@ function ConsultationForm() {
                     required: "Phone number is required",
                     pattern: {
                       value: /^\d{10}$/,
-                      message: "Invalid phone number",
+                      message: "Enter a valid 10-digit phone number",
                     },
                   })}
                   className="w-full px-4 py-2 rounded-md border border-grey-300 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-base"
@@ -146,6 +277,24 @@ function ConsultationForm() {
                 />
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-grey-700 mb-2">
+                  City
+                </label>
+                <input
+                  {...register("city", { required: "City is required" })}
+                  value={cityInput}
+                  onChange={(e) => setCityInput(e.target.value)}
+                  className="w-full px-4 py-2 rounded-md border border-grey-300 focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-base"
+                  placeholder="Enter your city"
+                />
+                {errors.city && (
+                  <p className="mt-1 text-red-700 text-sm">
+                    {errors.city.message}
+                  </p>
+                )}
+              </div>
+
               <button
                 type="submit"
                 className="w-full bg-brand-600 text-grey-0 py-3 px-6 rounded-md hover:bg-brand-700 transition-base font-medium text-base"
@@ -155,7 +304,7 @@ function ConsultationForm() {
             </form>
           </div>
 
-          {/* Right side - Image and Info */}
+          {/* Info section */}
           <div className="bg-brand-600 p-6 md:p-8 text-grey-0 flex flex-col justify-center">
             <div className="mb-8">
               <h3 className="text-xl md:text-2xl font-bold mb-4">
@@ -238,7 +387,7 @@ function ConsultationForm() {
                     d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                   />
                 </svg>
-                <span className="text-base">+91 72073 44618</span>
+                <span className="text-base">{contactNumber}</span>
               </div>
             </div>
           </div>

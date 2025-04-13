@@ -39,7 +39,12 @@ export const navItems = [
     dropdownItems: productCategories,
   },
   { path: "/about", label: "About" },
-  { path: "/booking", label: "Book Consultation" },
+
+  {
+    path: "/booking",
+    label: "Get Free Quotation",
+    isCTA: true,
+  },
 ];
 
 export const navItemVariants = {

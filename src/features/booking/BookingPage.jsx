@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import ConsultationForm from "./ConsultationForm";
 import { BiBuildingHouse, BiTime, BiPalette } from "react-icons/bi";
 
-function BookingPage() {
+function BookingPage({ selectedCity }) {
   const features = [
     {
       icon: <BiBuildingHouse className="w-16 h-16 text-brand-600" />,
@@ -69,7 +69,7 @@ function BookingPage() {
         </div>
 
         <div className="max-w-3xl mx-auto">
-          <ConsultationForm />
+          <ConsultationForm selectedCity={selectedCity} />
         </div>
       </div>
     </motion.div>
