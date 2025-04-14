@@ -1,134 +1,102 @@
-import { useNavigate } from "react-router-dom";
+// src\features\designs\designCategories.jsx
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-
-const categories = [
-  {
-    id: "kitchen",
-    name: "Kitchen",
-    image:
-      "https://nesdosiongcedbcytfzl.supabase.co/storage/v1/object/public/designimages//kitchen_53453455.png",
-    description: "Modern kitchen designs for every home",
-  },
-  {
-    id: "bedroom",
-    name: "Bedroom",
-    image:
-      "https://nesdosiongcedbcytfzl.supabase.co/storage/v1/object/public/designimages//bedroom_master_52342245.png",
-    description: "Comfortable and stylish bedroom layouts",
-  },
-  {
-    id: "bathroom",
-    name: "Bathroom",
-    image:
-      "https://nesdosiongcedbcytfzl.supabase.co/storage/v1/object/public/designimages//bathroom_master_9022233.png",
-    description: "Elegant bathroom solutions",
-  },
-  {
-    id: "living-room",
-    name: "Living Room",
-    image:
-      "https://nesdosiongcedbcytfzl.supabase.co/storage/v1/object/public/designimages//livingroom_modern_9993322.png",
-    description: "Modern living room concepts",
-  },
-  {
-    id: "dining-room",
-    name: "Dining Room",
-    image:
-      "https://nesdosiongcedbcytfzl.supabase.co/storage/v1/object/public/designimages//dining_room_modern_7845633.png",
-    description: "Beautiful dining room setups",
-  },
-  {
-    id: "wardrobe",
-    name: "Wardrobe",
-    image:
-      "https://nesdosiongcedbcytfzl.supabase.co/storage/v1/object/public/designimages//wardrobe_modern_0909323.png",
-    description: "Custom wardrobe solutions",
-  },
-  {
-    id: "window",
-    name: "Window",
-    image:
-      "https://nesdosiongcedbcytfzl.supabase.co/storage/v1/object/public/designimages//window_modern_92332220.png",
-    description: "Innovative window designs",
-  },
-];
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-    },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.6,
-      ease: "easeOut",
-    },
-  },
-  hover: {
-    y: -8,
-    transition: {
-      duration: 0.3,
-      ease: "easeInOut",
-    },
-  },
-};
-
-function CategoryCard({ category }) {
-  const navigate = useNavigate();
-
-  return (
-    <motion.div
-      variants={cardVariants}
-      whileHover="hover"
-      onClick={() => navigate(`/designs/${category.id}`)}
-      className="cursor-pointer group"
-    >
-      <div className="bg-grey-0 dark:bg-grey-800 rounded-xl overflow-hidden shadow-md transition-all duration-500 group-hover:shadow-xl">
-        <div className="relative h-72 overflow-hidden">
-          <motion.img
-            src={category.image}
-            alt={category.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        </div>
-        <div className="p-8">
-          <h3 className="text-2xl font-bold text-grey-900 dark:text-grey-0 mb-3">
-            {category.name}
-          </h3>
-          <p className="text-grey-600 dark:text-grey-300">
-            {category.description}
-          </p>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
+import { ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { useDesignCategories } from "./useDesignCategories";
 
 function DesignCategories() {
+  const { categories, isLoading, error } = useDesignCategories();
+  const navigate = useNavigate();
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="text-red-700 bg-red-100 p-4 rounded-md shadow-sm">
+        Error: {error.message}
+      </div>
+    );
+  }
+
+  // Empty state
+  if (!categories || categories.length === 0) {
+    return (
+      <div className="text-center p-8 bg-gray-50 rounded-lg">
+        <p className="text-gray-600">No design categories found.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto px-4 py-12">
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-      >
-        {categories.map((category) => (
-          <CategoryCard key={category.id} category={category} />
+    <>
+      {/* Header with back button and title aligned horizontally */}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {categories.map((category, index) => (
+          <motion.div
+            key={category.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.4,
+              delay: Math.min(index * 0.1, 0.8),
+            }}
+            className="bg-white dark:bg-grey-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 group"
+            whileHover={{
+              y: -5,
+              transition: { duration: 0.3, ease: "easeOut" },
+            }}
+          >
+            {/* Category image with proper loading */}
+            <Link to={`/designs/${category.routePath}`}>
+              <div className="h-48 bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                {category.image_url ? (
+                  <motion.img
+                    src={category.image_url}
+                    alt={category.name}
+                    className="w-full h-full object-cover transition-transform duration-500 ease-out"
+                    loading="lazy"
+                    whileHover={{ scale: 1.07 }}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <span className="text-lg">No image available</span>
+                  </div>
+                )}
+              </div>
+            </Link>
+
+            <div className="p-6">
+              <h3 className="text-xl font-semibold text-grey-900 dark:text-grey-100 mb-2">
+                {category.name}
+              </h3>
+              <p className="text-grey-600 dark:text-grey-300 mb-4">
+                {category.description ||
+                  `Explore our ${category.name} collection`}
+              </p>
+
+              {/* View details with arrow mark */}
+              <Link
+                to={`/designs/${category.routePath}`}
+                className="inline-flex items-center text-brand-500 hover:text-brand-600 font-medium transition-colors group"
+              >
+                View designs
+                <ArrowRightIcon className="h-4 w-4 ml-1 transform transition-transform duration-300 group-hover:translate-x-1.5" />
+              </Link>
+            </div>
+          </motion.div>
         ))}
-      </motion.div>
-    </div>
+      </div>
+    </>
   );
 }
 

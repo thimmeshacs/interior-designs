@@ -1,51 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useDesignCategories } from "./useDesignCategories";
+import { useProductCategories } from "./useProductCategories";
 import DropdownMenu from "../../ui/DropdownMenu";
-
-// Design categories with display names and URL-safe paths
-export const designCategories = [
-  { path: "kitchen", display: "Kitchen" },
-  { path: "bedroom", display: "Bedroom" },
-  { path: "bathroom", display: "Bathroom" },
-  { path: "living-room", display: "Living Room" },
-  { path: "dining-room", display: "Dining Room" },
-  { path: "wardrobe", display: "Wardrobe" },
-  { path: "window", display: "Window" },
-];
-
-export const productCategories = [
-  { path: "kitchen-cabinets", display: "Kitchen Cabinets" },
-  { path: "doors", display: "Doors" },
-  { path: "windows", display: "Windows" },
-  { path: "tiles", display: "Tiles" },
-  { path: "sanitary-ware", display: "Sanitary Ware" },
-  { path: "marbles", display: "Marbles" },
-  { path: "lighting", display: "Lighting" },
-];
-
-export const navItems = [
-  { path: "/", label: "Home" },
-  {
-    path: "/designs",
-    label: "Designs",
-    hasDropdown: true,
-    dropdownItems: designCategories,
-  },
-  {
-    path: "/products",
-    label: "Products",
-    hasDropdown: true,
-    dropdownItems: productCategories,
-  },
-  { path: "/about", label: "About" },
-
-  {
-    path: "/booking",
-    label: "Get Free Quotation",
-    isCTA: true,
-  },
-];
 
 export const navItemVariants = {
   hidden: { opacity: 0, y: -20 },
@@ -60,6 +17,28 @@ export const navItemVariants = {
   }),
 };
 
+export const navItems = [
+  { path: "/", label: "Home" },
+  {
+    path: "/designs",
+    label: "Designs",
+    hasDropdown: true,
+    useCategories: useDesignCategories,
+  },
+  {
+    path: "/products",
+    label: "Products",
+    hasDropdown: true,
+    useCategories: useProductCategories,
+  },
+  { path: "/about", label: "About" },
+  {
+    path: "/booking",
+    label: "Get Free Quotation",
+    isCTA: true,
+  },
+];
+
 export function NavItem({ item, index, isScrolled, shouldBeWhite }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -67,6 +46,13 @@ export function NavItem({ item, index, isScrolled, shouldBeWhite }) {
     location.pathname === item.path ||
     (item.path === "/designs" && location.pathname.startsWith("/designs/")) ||
     (item.path === "/products" && location.pathname.startsWith("/products/"));
+
+  // Get categories if the item has a dropdown
+  const {
+    categories = [],
+    isLoading,
+    error,
+  } = item.useCategories ? item.useCategories() : {};
 
   const linkClasses = `relative ${
     shouldBeWhite ? "text-white" : "text-gray-800"
@@ -99,13 +85,15 @@ export function NavItem({ item, index, isScrolled, shouldBeWhite }) {
       {item.hasDropdown ? (
         <DropdownMenu
           trigger={trigger}
-          items={item.dropdownItems}
+          items={categories}
           baseUrl={item.path}
           onItemClick={(category) => {
             navigate(`${item.path}/${category.path}`);
           }}
           itemClassName="hover:bg-gray-50 hover:text-accent-teal"
           activeItemClassName="bg-gray-50 text-accent-teal font-medium"
+          isLoading={isLoading}
+          error={error}
         />
       ) : (
         trigger

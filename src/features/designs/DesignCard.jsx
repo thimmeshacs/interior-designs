@@ -5,16 +5,19 @@ function DesignCard({ design }) {
   return (
     <Link to={`/designs/${design.category}/${design.id}`}>
       <motion.div
-        whileHover={{ scale: 1.02 }}
-        className="bg-grey-0 rounded-lg shadow-md overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl"
+        whileHover={{
+          scale: 1.03,
+          transition: { duration: 0.3, ease: "easeOut" },
+        }}
+        className="bg-grey-0 rounded-lg shadow-md overflow-hidden cursor-pointer group hover:shadow-xl"
       >
         <div className="relative h-72">
-          <img
+          <motion.img
             src={design.image_url}
             alt={design.description}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         </div>
         <div className="p-6">
           <h3 className="text-xl font-semibold text-grey-900 mb-3">
@@ -34,6 +37,28 @@ function DesignCard({ design }) {
               Type: {design.sub_category?.replace(/_/g, " ")}
             </p>
           </div>
+          <motion.div
+            className="mt-4 text-brand-500 font-medium flex items-center opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            View details
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 ml-1 group-hover:translate-x-1 transition-transform"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M14 5l7 7m0 0l-7 7m7-7H3"
+              />
+            </svg>
+          </motion.div>
         </div>
       </motion.div>
     </Link>
