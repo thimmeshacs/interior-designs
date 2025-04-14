@@ -1,32 +1,32 @@
+// src/home/WhyChooseUs.jsx
 import { motion } from "framer-motion";
-import {
-  Upload,
-  Palette,
-  GitCompare as Compare,
-  Presentation as PresentationScreen,
-} from "lucide-react";
+import { HeartHandshake, Users, ClipboardList, Hammer } from "lucide-react";
 
 function WhyChooseUs() {
   const processSteps = [
     {
-      icon: <Upload />,
-      title: "Upload Interior",
-      description: "Upload your current interior images",
+      icon: <HeartHandshake />,
+      title: "Tailored Design Solutions",
+      description:
+        "Every space we design is uniquely crafted to reflect your personal style and vision.",
     },
     {
-      icon: <Palette />,
-      title: "AI Design",
-      description: "Generate AI-based design concepts",
+      icon: <Users />,
+      title: "Experienced & Passionate Team",
+      description:
+        "Our skilled designers bring years of experience and creative passion to every project.",
     },
     {
-      icon: <Compare />,
-      title: "Compare Options",
-      description: "Compare and choose your preferred design",
+      icon: <ClipboardList />,
+      title: "End-to-End Project Management",
+      description:
+        "We manage everything from concept to completion for a smooth, stress-free experience.",
     },
     {
-      icon: <PresentationScreen />,
-      title: "Visual Proposal",
-      description: "Get before-and-after visual proposals",
+      icon: <Hammer />,
+      title: "Quality & Craftsmanship Guaranteed",
+      description:
+        "We work with trusted craftsmen and use premium materials for lasting quality.",
     },
   ];
 

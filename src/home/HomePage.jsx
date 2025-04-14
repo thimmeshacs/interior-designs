@@ -1,25 +1,36 @@
+// src/home/HomePage.jsx
 import Hero from "./Hero";
 import WhyChooseUs from "./WhyChooseUs";
 import CTASection from "./CTASection";
 import DesignCategoriesGrid from "./DesignCategoriesGrid";
 import { motion } from "framer-motion";
-import { MapPin, Building2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 
 function HomePage() {
-  const cities = [
-    "New York",
-    "Los Angeles",
-    "Chicago",
-    "Miami",
-    "Houston",
-    "Seattle",
+  const logos = [
+    { name: "Godrej", src: "/assets/partners/godrej.png" },
+    { name: "Nimmi", src: "/assets/partners/nimmi.png" },
+    { name: "Bosch", src: "/assets/partners/bosch.png" },
+    { name: "Kaff", src: "/assets/partners/kaff.png" },
+    { name: "Hettich", src: "/assets/partners/hettich.png" },
+    { name: "Ebco", src: "/assets/partners/ebco.png" },
   ];
-  const partners = [
-    "Modern Homes Co.",
-    "Elite Interiors",
-    "Design Masters",
-    "Luxury Living",
-  ];
+
+  const [isHovered, setIsHovered] = useState(false);
+  const [inView, setInView] = useState(false);
+  const marqueeRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setInView(entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+
+    if (marqueeRef.current) observer.observe(marqueeRef.current);
+    return () => marqueeRef.current && observer.unobserve(marqueeRef.current);
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -27,52 +38,50 @@ function HomePage() {
       <WhyChooseUs />
       <DesignCategoriesGrid />
 
-      {/* Cities and Partners */}
+      {/* Trusted Partners */}
       <section className="py-20 bg-grey-0">
         <div className="container mx-auto px-4">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-4xl font-sans text-center mb-16"
+            className="text-4xl font-sans text-center mb-12"
           >
-            Our Reach and Partners
+            Our Trusted Partners
           </motion.h2>
-          <div className="grid md:grid-cols-2 gap-16">
+
+          <div
+            ref={marqueeRef}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="overflow-hidden relative"
+          >
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
+              animate={{
+                x: isHovered || !inView ? 0 : ["0%", "-100%"],
+              }}
+              transition={{
+                x: {
+                  repeat: Infinity,
+                  repeatType: "loop",
+                  duration: 20,
+                  ease: "linear",
+                },
+              }}
+              className="flex gap-16 whitespace-nowrap"
             >
-              <h3 className="text-2xl font-semibold mb-6 flex items-center">
-                <MapPin className="mr-2 text-brand-500" />
-                Operational Cities
-              </h3>
-              <div className="grid grid-cols-2 gap-4">
-                {cities.map((city) => (
-                  <div key={city} className="flex items-center">
-                    <Building2 className="w-4 h-4 mr-2 text-brand-500" />
-                    <span className="text-grey-700">{city}</span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <h3 className="text-2xl font-semibold mb-6">Trusted Partners</h3>
-              <div className="grid grid-cols-2 gap-4">
-                {partners.map((partner) => (
-                  <div
-                    key={partner}
-                    className="p-4 bg-grey-50 rounded-md shadow-sm hover:shadow-md transition-base"
-                  >
-                    {partner}
-                  </div>
-                ))}
-              </div>
+              {[...logos, ...logos].map((logo, index) => (
+                <div
+                  key={index}
+                  className="min-w-[150px] h-24 flex items-center justify-center p-4 hover:scale-105 transition-transform cursor-pointer"
+                >
+                  <img
+                    src={logo.src}
+                    alt={logo.name}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+              ))}
             </motion.div>
           </div>
         </div>
