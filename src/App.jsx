@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
 import Layout from "./ui/Layout";
 import HomePage from "./home/HomePage";
 import DesignExplorerPage from "./pages/ExploreDesignPage";
@@ -73,21 +74,13 @@ function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
 
-          {/* Chatbot */}
+          {/* Chatbot - now includes close icon internally */}
           {isChatbotOpen && (
             <Chatbot
               onClose={() => setIsChatbotOpen(false)}
               selectedCity={cityData.city || ""}
             />
           )}
-
-          {/* Chatbot Toggle Button */}
-          <button
-            onClick={() => setIsChatbotOpen(!isChatbotOpen)}
-            className="fixed bottom-4 right-4 bg-teal-600 text-white p-3 rounded-full shadow-lg z-50 hover:bg-teal-700 transition-colors"
-          >
-            {isChatbotOpen ? "Close Chat" : "Open Chat"}
-          </button>
         </div>
       </BrowserRouter>
     </QueryClientProvider>
