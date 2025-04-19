@@ -192,12 +192,6 @@ function Header({ onCitySelect }) {
                     />
                   </svg>
                 </Link>
-                <motion.div
-                  className="absolute -bottom-1 left-0 w-full h-1 bg-brand-500"
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: shouldBeWhite ? 1 : 0 }}
-                  transition={{ duration: 0.3 }}
-                />
               </motion.div>
 
               <motion.div
@@ -243,17 +237,6 @@ function Header({ onCitySelect }) {
               </svg>
             </button>
           </div>
-
-          {/* Scroll progress indicator */}
-          <motion.div
-            className="h-0.5 bg-brand-500"
-            initial={{ scaleX: 0 }}
-            animate={{
-              scaleX: !shouldBeWhite ? 1 : 0,
-              transformOrigin: "left",
-            }}
-            transition={{ duration: 0.3 }}
-          />
         </div>
       </motion.header>
 
